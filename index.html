@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Tic-Tac-Toe</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(to bottom right, #6a11cb, #2575fc);
+        }
+        .container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+        .home-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #ffffff;
+            font-size: 3rem;
+        }
+        button {
+            margin-top: 20px;
+            padding: 14px 28px;
+            font-size: 18px;
+            color: white;
+            background-color: #ff7f50;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            width: 100%;
+            max-width: 400px;
+            margin-top: 20px;
+            transition: transform 1s ease;
+        }
+        .cell {
+            width: 100%;
+            aspect-ratio: 1;
+            background-color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 36px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .message {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+        }
+        .dark-mode {
+            background: linear-gradient(to bottom right, #1c1c1c, #3a3a3a);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="home-screen" id="home-screen">
+        <h1>Welcome to Tic-Tac-Toe</h1>
+        <button id="start-game">Play</button>
+        <button id="toggle-theme">Dark Mode</button>
+    </div>
+    <div class="container" id="game-container">
+        <div class="header">
+            <span id="scores">X: 0 | O: 0</span>
+            <button id="theme-toggle">Dark Mode</button>
+        </div>
+        <div class="board" id="board"></div>
+        <button id="restart-game" style="margin-top: 20px; display: none;">Restart</button>
+        <div class="message" id="message"></div>
+    </div>
+
+    <script>
+        const homeScreen = document.getElementById('home-screen');
+        const gameContainer = document.getElementById('game-container');
+        const startGameButton = document.getElementById('start-game');
+        const themeToggleHome = document.getElementById('toggle-theme');
+        const themeToggleGame = document.getElementById('theme-toggle');
+        const board = document.getElementById('board');
+        const message = document.getElementById('message');
+        const scoresDisplay = document.getElementById('scores');
+        const restartGameButton = document.getElementById('restart-game');
+
+        let squares = Array(9).fill(' ');
+        let currentPlayer = 'X';
+        let scores = { X: 0, O: 0 };
+        let rotationDegrees = 0;
+        let rotationInterval;
+
+        // Background Music (Restored)
+        const backgroundMusic = new Audio('Screen_Recording_20241124_170742_20241128_165951.mp3');
+        backgroundMusic.loop = true;
+
+        function renderBoard() {
+            board.innerHTML = '';
+            squares.forEach((value, index) => {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.textContent = value;
+                cell.addEventListener('click', () => makeMove(index));
+                board.appendChild(cell);
+            });
+        }
+
+        function makeMove(index) {
+            if (squares[index] !== ' ') {
+                message.textContent = 'Invalid move!';
+                return;
+            }
+
+            squares[index] = currentPlayer;
+
+            if (checkWin(currentPlayer)) {
+                scores[currentPlayer]++;
+                updateScores();
+                startBoardRotation();
+                message.textContent = `${currentPlayer} wins!`;
+                return;
+            }
+
+            if (!squares.includes(' ')) {
+                message.textContent = "It's a tie!";
+                return;
+            }
+
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            renderBoard();
+            message.textContent = `${currentPlayer}'s turn.`;
+        }
+
+        function checkWin(player) {
+            const winConditions = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8],
+                [0, 3, 6], [1, 4, 7], [2, 5, 8],
+                [0, 4, 8], [2, 4, 6],
+            ];
+            return winConditions.some(condition =>
+                condition.every(index => squares[index] === player)
+            );
+        }
+
+        function updateScores() {
+            scoresDisplay.textContent = `X: ${scores.X} | O: ${scores.O}`;
+        }
+
+        function startBoardRotation() {
+            restartGameButton.style.display = 'block';
+            rotationInterval = setInterval(() => {
+                rotationDegrees += 360;
+                board.style.transform = `rotate(${rotationDegrees}deg)`;
+            }, 1000);
+        }
+
+        function stopBoardRotation() {
+            clearInterval(rotationInterval);
+            board.style.transform = `rotate(0deg)`;
+        }
+
+        restartGameButton.addEventListener('click', () => {
+            stopBoardRotation();
+            squares = Array(9).fill(' ');
+            currentPlayer = 'X';
+            renderBoard();
+            message.textContent = `${currentPlayer}'s turn.`;
+        });
+
+        startGameButton.addEventListener('click', () => {
+            homeScreen.style.display = 'none';
+            gameContainer.style.display = 'flex';
+            renderBoard();
+            message.textContent = `${currentPlayer}'s turn.`;
+            backgroundMusic.play();
+        });
+
+        themeToggleHome.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+        });
+
+        themeToggleGame.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+        });
+
+        renderBoard();
+    </script>
+</body>
+</html>
